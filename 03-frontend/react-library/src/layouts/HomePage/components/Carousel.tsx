@@ -1,6 +1,7 @@
 import { ReturnBook } from "./ReturnBook";
 import { useEffect, useState } from "react";
 import BookModel from "../../../models/BookModel";
+import { SpinnerLoading } from "../../Utils/SpinnerLoading";
 
 export const Carousel = () => {
   const [books, setBooks] = useState<BookModel[]>([]);
@@ -20,6 +21,9 @@ export const Carousel = () => {
 
         const responseJson = await response.json();
         const responseData = responseJson._embedded.books;
+
+        // Debugging: Log the API response to check if images exist
+        console.log("Fetched Books:", responseData);
 
         const loadedBooks: BookModel[] = responseData.map((book: any) => ({
           id: book.id,
@@ -44,11 +48,7 @@ export const Carousel = () => {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="container m-5">
-        <p>Loading...</p>
-      </div>
-    );
+    return <SpinnerLoading />;
   }
 
   if (httpError) {
