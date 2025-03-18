@@ -9,7 +9,7 @@ public interface BookProjection {
     String getAuthor();
     String getDescription();
     int getCopies();
-    int getCopiesAvailable(); 
+    int getCopiesAvailable();
     String getCategory();
     String getImg();
 }
