@@ -60,7 +60,7 @@ export const SearchBooksPage = () => {
 
         setBooks(loadedBooks);
         setIsLoading(false);
-      } catch (error: any) {
+      } catch (error) {
         setIsLoading(false);
         setHttpError(error.message);
       }
