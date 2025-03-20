@@ -1,13 +1,21 @@
+// 
+
 import { useEffect, useState } from "react";
 import BookModel from "../../models/BookModel";
 import { SpinnerLoading } from "../Utils/SpinnerLoading";
 import { StarsReview } from "../Utils/StarsReview";
 import { CheckoutAndReviewBox } from "./CheckoutAndReviewBox";
+import ReviewModel from "../../models/ReviewModel";
+import { LatestReviews } from "./LatestReviews"; // Added missing import for LatestReviews component
 
 export const BookCheckoutPage = () => {
   const [book, setBook] = useState<BookModel>();
   const [isLoading, setIsLoading] = useState(true);
   const [httpError, setHttpError] = useState(null);
+  //Review State
+  const [reviews, setReviews] = useState<ReviewModel[]>([]);
+  const [totalStars, setTotalStars] = useState(0);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true); // Fixed typo in variable name
 
   const bookId = window.location.pathname.split("/")[2]; //splitiing by book id []
 
@@ -41,9 +49,50 @@ export const BookCheckoutPage = () => {
       setIsLoading(false);
       setHttpError(error.message);
     });
-  }, []);
+  }, [bookId]); // Added bookId to dependency array
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchBookReviews = async () => {
+      // Fixed URL format - removed extra question mark, should be & instead
+      const reviewsUrl: string = `http://localhost:8080/api/reviews/search/findByBookId?bookId=${bookId}&projection=reviewProjection`;
+      const responseReviews = await fetch(reviewsUrl);
+
+      if (!responseReviews.ok) {
+        throw new Error("Something went wrong!");
+      }
+      const responseJsonReviews = await responseReviews.json();
+      const responseData = responseJsonReviews._embedded.reviews;
+      const loadedReviews: ReviewModel[] = [];
+
+      let weightedStarReviews: number = 0;
+
+      for (const key in responseData) {
+        loadedReviews.push({
+          id: responseData[key].id,
+          userEmail: responseData[key].userEmail,
+          date: responseData[key].date,
+          rating: responseData[key].rating,
+          book_id: responseData[key].bookId,
+          reviewDescription: responseData[key].reviewDescription
+        });
+        weightedStarReviews = weightedStarReviews + responseData[key].rating;
+      }
+      // Fixed condition to check array length instead of just existence
+      if (loadedReviews.length > 0) {
+        const round = (Math.round((weightedStarReviews / loadedReviews.length) * 2) / 2).toFixed(1);
+        setTotalStars(Number(round));
+      }
+      setReviews(loadedReviews);
+      setIsLoadingReviews(false);
+    };
+
+    fetchBookReviews().catch((error: any) => {
+      setIsLoadingReviews(false);
+      setHttpError(error.message);
+    });
+  }, [bookId]); // Added bookId to dependency array
+
+  if (isLoading || isLoadingReviews) { // Fixed typo in variable name
     return <SpinnerLoading />;
   }
 
@@ -76,12 +125,13 @@ export const BookCheckoutPage = () => {
               <h2>{book?.title}</h2>
               <h5 className="text-primary">{book?.author}</h5>
               <p className="lead">{book?.description}</p>
-              <StarsReview rating={4} size={32} />
+              <StarsReview rating={totalStars} size={32} /> {/* Changed hardcoded 4 to dynamic totalStars */}
             </div>
           </div>
           <CheckoutAndReviewBox book={book} mobile={false} />
         </div>
         <hr />
+        <LatestReviews reviews={reviews} bookId={book?.id} mobile={false} />
       </div>
       <div className="container d-lg-none mt-5">
         <div className="d-flex justify-content-center align-items-center">
@@ -101,11 +151,13 @@ export const BookCheckoutPage = () => {
             <h2>{book?.title}</h2>
             <h5 className="text-primary">{book?.author}</h5>
             <p className="lead">{book?.description}</p>
-            <StarsReview rating={4} size={32} />
+            <StarsReview rating={totalStars} size={32} /> {/* Changed hardcoded 4 to dynamic totalStars */}
             <CheckoutAndReviewBox book={book} mobile={true} />
           </div>
         </div>
+
         <hr />
+        <LatestReviews reviews={reviews} bookId={book?.id} mobile={true} />
       </div>
     </div>
   );
