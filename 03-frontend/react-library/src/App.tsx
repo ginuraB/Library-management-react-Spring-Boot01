@@ -13,7 +13,6 @@ import LoginWidget from "./Auth/LoginWidget";
 
 const oktaAuth = new OktaAuth(oktaConfig);
 
-// Create a wrapper component to use hooks
 const AppWithRouting = () => {
   const navigate = useNavigate();
 
@@ -21,7 +20,7 @@ const AppWithRouting = () => {
     navigate("/login");
   };
 
-  const restoreOriginalUri = async (_oktaAuth: any, originalUri: string) => {
+  const restoreOriginalUri = async (_oktaAuth: any, originalUri: any) => {
     navigate(toRelativeUrl(originalUri || "/", window.location.origin), {
       replace: true,
     });
@@ -41,10 +40,7 @@ const AppWithRouting = () => {
             <Route path="/home" element={<HomePage />} />
             <Route path="/search" element={<SearchBooksPage />} />
             <Route path="/checkout/:bookId" element={<BookCheckoutPage />} />
-            <Route
-              path="/login"
-              element={<LoginWidget config={oktaConfig} />}
-            />
+            <Route path="/login" element={<LoginWidget />} />
             <Route path="/login/callback" element={<LoginCallback />} />
           </Routes>
         </div>
@@ -54,7 +50,6 @@ const AppWithRouting = () => {
   );
 };
 
-// Main App component that doesn't use hooks
 export const App = () => {
   return <AppWithRouting />;
 };
