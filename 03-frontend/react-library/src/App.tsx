@@ -20,10 +20,15 @@ const AppWithRouting = () => {
     navigate("/login");
   };
 
-  const restoreOriginalUri = async (_oktaAuth: any, originalUri: any) => {
-    navigate(toRelativeUrl(originalUri || "/", window.location.origin), {
-      replace: true,
-    });
+  // const restoreOriginalUri = async (_oktaAuth: any, originalUri: any) => {
+  //   navigate(toRelativeUrl(originalUri || "/", window.location.origin), {
+  //     replace: true,
+  //   });
+  // };
+  const restoreOriginalUri = async (oktaAuth: any, originalUri: any) => {
+    console.log("Restoring original URI: ", originalUri); // Debugging
+    const newUri = toRelativeUrl(originalUri || "/", window.location.origin);
+    navigate(newUri, { replace: true });
   };
 
   return (

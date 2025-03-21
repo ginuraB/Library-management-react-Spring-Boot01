@@ -7,6 +7,7 @@ const LoginWidget = () => {
     const { oktaAuth, authState } = useOktaAuth();
 
     const onSuccess = async (tokens) => {
+        console.log("Login successful!", tokens); // Debugging
         await oktaAuth.handleLoginRedirect(tokens);
     };
 
@@ -15,14 +16,17 @@ const LoginWidget = () => {
     };
 
     if (!authState) {
+        console.log("Auth state is still loading..."); // Debugging
         return <SpinnerLoading />;
     }
 
-    return authState.isAuthenticated ? (
-        <Navigate to="/" />
-    ) : (
-        <OktaSigninWidget onSuccess={onSuccess} onError={onError} />
-    );
+    if (authState.isAuthenticated) {
+        console.log("User is authenticated, redirecting...");
+        return <Navigate to="/" />;
+    }
+
+    console.log("Auth state loaded, showing login widget");
+    return <OktaSigninWidget onSuccess={onSuccess} onError={onError} />;
 };
 
 export default LoginWidget;
